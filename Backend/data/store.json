@@ -1,0 +1,54 @@
+{
+  "users": [
+    {
+      "_id": "57014465-8a16-4c8a-9359-9b407ec35b7d",
+      "name": "Test User",
+      "email": "test@example.com",
+      "password": "$2b$10$ggNDntQsXu3SMx4vUHQeY.V1WhiNZ7TQ4mkL/Y64JNBNHwQouFJUe",
+      "role": "user"
+    },
+    {
+      "_id": "a5b2a02d-c4bf-49bd-89c1-6337fb84efae",
+      "name": "Live User",
+      "email": "live@example.com",
+      "password": "$2b$10$EerT/Ur/s/k843zYgP0eTO0a5MxpJH1qHz.0Oxc7xBdfkX1NgXV.W",
+      "role": "user"
+    },
+    {
+      "_id": "a7d6222d-70c4-4e66-930f-0599ca554b42",
+      "name": "",
+      "email": "shubham1212",
+      "password": "$2b$10$.w2uBydOcowdAj7VL5AJx.YVqLpdFMlExjzr.LNLHo/tVaFIrxZBe",
+      "role": "user"
+    },
+    {
+      "_id": "8a87b36b-24d5-420b-b08b-e527cda1ce2b",
+      "name": "kaaju",
+      "email": "ashu@gmail.com",
+      "password": "$2b$10$2EppHta10WukGGLcWEFGJ.1Qg/.hN858wNHhvyxpQKc1BdYVN0zyW",
+      "role": "user"
+    },
+    {
+      "_id": "73c3af4d-b9ee-4228-800a-801f0d15bf99",
+      "name": "kalakala",
+      "email": "papa@gmail.com",
+      "password": "$2b$10$fISAZX043axapiH0a4VJTeOQq2y9hpRGMzkZez1nB1Rwi0UCwCX4m",
+      "role": "user"
+    },
+    {
+      "_id": "33c38144-af6e-4f3a-81aa-4381931318fd",
+      "name": "shbhan",
+      "email": "shubham@1233",
+      "password": "$2b$10$0silOrLopXd6iWCgJEZzd.W3tOiXy5omLgS1Mdy5hjKxrA.idhw0y",
+      "role": "seller"
+    },
+    {
+      "_id": "14f32664-1e0e-4192-825d-fccc5ad79fc2",
+      "name": "shubham",
+      "email": "shubha@1234",
+      "password": "$2b$10$k2y20Zs5Odl/iHU/g3itQuejQzp3sSsm9LOChvvP9PoseqcQLJRMO",
+      "role": "user"
+    }
+  ],
+  "products": []
+}

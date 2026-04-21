@@ -1,0 +1,65 @@
+<svg width="520" height="180" viewBox="0 0 520 180" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2ee6a6"/>
+      <stop offset="50%" stop-color="#1aa7ec"/>
+      <stop offset="100%" stop-color="#0b3c9d"/>
+    </linearGradient>
+
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd200"/>
+      <stop offset="100%" stop-color="#f7971e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Icon Group -->
+  <g transform="translate(20,10) scale(0.6)">
+
+    <!-- Pin -->
+    <path d="M160 30
+             C95 30, 60 80, 60 130
+             C60 210, 160 320, 160 320
+             C160 320, 260 210, 260 130
+             C260 80, 225 30, 160 30Z"
+          fill="url(#mainGradient)"/>
+
+    <!-- Swirl -->
+    <path d="M160 40
+             C220 40, 260 100, 240 150
+             C220 200, 180 250, 140 290"
+          fill="none"
+          stroke="url(#accentGradient)"
+          stroke-width="22"
+          stroke-linecap="round"/>
+
+    <!-- Inner Circle -->
+    <circle cx="160" cy="140" r="70" fill="white" opacity="0.95"/>
+
+    <!-- Bag -->
+    <rect x="120" y="110" width="80" height="80" rx="14" fill="#f2f2f2"/>
+
+    <!-- Handle -->
+    <path d="M130 110 C130 75, 190 75, 190 110"
+          stroke="#bbbbbb"
+          stroke-width="6"
+          fill="none"/>
+
+    <!-- Check -->
+    <path d="M140 150 L155 165 L180 135"
+          stroke="#f7971e"
+          stroke-width="6"
+          fill="none"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+
+  </g>
+
+  <!-- Text -->
+  <text x="220" y="110" font-size="52" font-family="Arial, sans-serif" font-weight="bold">
+    <tspan fill="#1aa7ec">Near</tspan>
+    <tspan fill="#f7971e">Buy</tspan>
+  </text>
+
+</svg>
