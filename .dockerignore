@@ -1,0 +1,10 @@
+.git
+.vite
+.vite-cache
+dist
+node_modules
+Backend/node_modules
+Backend/.env
+Backend/*.log
+.env
+npm-debug.log*

@@ -11,7 +11,7 @@ const localCacheDir = process.env.LOCALAPPDATA
 export default defineConfig({
   cacheDir: localCacheDir,
   build: {
-    emptyOutDir: false,
+    emptyOutDir: true,
   },
   plugins: [react(),tailwindcss(),],
 })
