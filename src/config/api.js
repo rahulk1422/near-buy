@@ -1,3 +1,5 @@
+const DEFAULT_RAILWAY_API_URL = "https://near-buy-production.up.railway.app";
+
 function normalizeBaseUrl(value) {
   return value?.replace(/\/+$/, "") || "";
 }
@@ -17,10 +19,14 @@ function getApiBaseUrl() {
       return "http://localhost:5000";
     }
 
+    if (hostname.endsWith("vercel.app")) {
+      return DEFAULT_RAILWAY_API_URL;
+    }
+
     return normalizeBaseUrl(origin);
   }
 
-  return "http://localhost:5000";
+  return DEFAULT_RAILWAY_API_URL;
 }
 
 export const API_BASE_URL = getApiBaseUrl();

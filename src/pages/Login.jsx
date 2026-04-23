@@ -27,10 +27,39 @@ export default function Login() {
     }
   };
 
+  const validateAuthForm = () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedName = name.trim();
+
+    if (isSignup && !normalizedName) {
+      return "Full name is required.";
+    }
+
+    if (!normalizedEmail) {
+      return "Email is required.";
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return "Please enter a valid email address.";
+    }
+
+    if (!password || password.length < 6) {
+      return "Password must be at least 6 characters long.";
+    }
+
+    return "";
+  };
+
   // 🔐 Login / Signup
   const handleSubmit = async () => {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedName = name.trim();
+    const validationError = validateAuthForm();
+
+    if (validationError) {
+      alert(validationError);
+      return;
+    }
 
     try {
       if (isSignup) {
