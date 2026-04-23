@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const express = require("express");
@@ -7,6 +8,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const User = require("./models/User");
+const { getUsers, saveUsers } = require("./lib/fileStore");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,8 +24,14 @@ const DEFAULT_ADMIN_NAME = process.env.ADMIN_NAME || "Near Buy Admin";
 const DEFAULT_SELLER_EMAIL = process.env.SELLER_EMAIL || "seller@nearbuy.com";
 const DEFAULT_SELLER_PASSWORD = process.env.SELLER_PASSWORD || "Seller@123";
 const DEFAULT_SELLER_NAME = process.env.SELLER_NAME || "Near Buy Seller";
+const USE_FILE_DB = String(process.env.USE_FILE_DB || "").toLowerCase() === "true";
 
 app.locals.useFileDb = false;
+
+if (!process.env.JWT_SECRET) {
+  process.env.JWT_SECRET = crypto.randomBytes(32).toString("hex");
+  console.warn("JWT_SECRET was not configured. Generated an ephemeral secret for this deployment.");
+}
 
 function isAllowedOrigin(origin) {
   return allowedOrigins.length === 0 || allowedOrigins.includes(origin);
@@ -118,11 +126,132 @@ async function ensureSellerUser() {
   console.log(`Default seller ready: ${DEFAULT_SELLER_EMAIL}`);
 }
 
+async function ensureFileDbAdminUser() {
+  const users = await getUsers();
+  const normalizedAdminEmail = DEFAULT_ADMIN_EMAIL.trim().toLowerCase();
+  let hasChanges = false;
+
+  let adminUser = users.find(
+    (user) => user.email?.trim?.().toLowerCase?.() === normalizedAdminEmail
+  );
+
+  if (!adminUser) {
+    users.push({
+      _id: crypto.randomUUID(),
+      name: DEFAULT_ADMIN_NAME,
+      email: normalizedAdminEmail,
+      password: await bcrypt.hash(DEFAULT_ADMIN_PASSWORD, 10),
+      role: "admin",
+      isBlocked: false,
+    });
+    hasChanges = true;
+    console.log(`Default admin ready (file storage): ${DEFAULT_ADMIN_EMAIL}`);
+  } else {
+    if (adminUser.role !== "admin") {
+      adminUser.role = "admin";
+      hasChanges = true;
+    }
+
+    if (typeof adminUser.isBlocked !== "boolean") {
+      adminUser.isBlocked = false;
+      hasChanges = true;
+    }
+  }
+
+  for (const user of users) {
+    const normalizedUserEmail = user.email?.trim?.().toLowerCase?.();
+    if (user.role === "admin" && normalizedUserEmail !== normalizedAdminEmail) {
+      user.role = "user";
+      hasChanges = true;
+    }
+  }
+
+  if (hasChanges) {
+    await saveUsers(users);
+  }
+}
+
+async function ensureFileDbSellerUser() {
+  const users = await getUsers();
+  const normalizedSellerEmail = DEFAULT_SELLER_EMAIL.trim().toLowerCase();
+  let hasChanges = false;
+
+  let sellerUser = users.find(
+    (user) => user.email?.trim?.().toLowerCase?.() === normalizedSellerEmail
+  );
+
+  if (!sellerUser) {
+    users.push({
+      _id: crypto.randomUUID(),
+      name: DEFAULT_SELLER_NAME,
+      email: normalizedSellerEmail,
+      password: await bcrypt.hash(DEFAULT_SELLER_PASSWORD, 10),
+      role: "seller",
+      isBlocked: false,
+    });
+    hasChanges = true;
+    console.log(`Default seller ready (file storage): ${DEFAULT_SELLER_EMAIL}`);
+  } else {
+    if (sellerUser.role !== "seller") {
+      sellerUser.role = "seller";
+      hasChanges = true;
+    }
+
+    if (!sellerUser.name) {
+      sellerUser.name = DEFAULT_SELLER_NAME;
+      hasChanges = true;
+    }
+
+    if (typeof sellerUser.isBlocked !== "boolean") {
+      sellerUser.isBlocked = false;
+      hasChanges = true;
+    }
+  }
+
+  if (hasChanges) {
+    await saveUsers(users);
+  }
+}
+
+async function ensureSeedUsers() {
+  if (app.locals.useFileDb) {
+    await ensureFileDbAdminUser();
+    await ensureFileDbSellerUser();
+    return;
+  }
+
+  await ensureAdminUser();
+  await ensureSellerUser();
+}
+
+function startHttpServer(storageMode) {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`Server running on port ${PORT} (${storageMode} mode)`);
+  });
+}
+
+async function startInFileDbMode(reason) {
+  app.locals.useFileDb = true;
+
+  if (reason) {
+    console.warn(reason);
+  }
+
+  await ensureSeedUsers();
+  startHttpServer("file");
+}
+
 async function startServer() {
+  if (USE_FILE_DB) {
+    await startInFileDbMode("USE_FILE_DB=true detected. Starting backend with file storage.");
+    return;
+  }
+
   if (!process.env.MONGO_URI) {
-    console.error("MONGO_URI is not configured.");
-    console.error("Add it in Railway Variables before deploying this service.");
-    process.exit(1);
+    await startInFileDbMode(
+      "MONGO_URI is not configured. Starting backend with file storage fallback."
+    );
+    return;
   }
 
   try {
@@ -130,16 +259,12 @@ async function startServer() {
       serverSelectionTimeoutMS: 10000,
     });
     console.log("MongoDB Connected ✅");
-    await ensureAdminUser();
-    await ensureSellerUser();
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+    await ensureSeedUsers();
+    startHttpServer("mongo");
   } catch (err) {
-    console.error("MongoDB connection failed. Server not started.");
-    console.error("Check the Railway MONGO_URI value and Atlas network access settings.");
-    console.error(err.message);
-    process.exit(1);
+    await startInFileDbMode(
+      `MongoDB connection failed (${err.message}). Starting backend with file storage fallback.`
+    );
   }
 }
 

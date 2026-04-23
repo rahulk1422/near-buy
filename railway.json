@@ -1,0 +1,17 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "RAILPACK",
+    "watchPatterns": [
+      "/Backend/**",
+      "/railway.json"
+    ],
+    "buildCommand": "npm install --prefix Backend"
+  },
+  "deploy": {
+    "startCommand": "npm start --prefix Backend",
+    "healthcheckPath": "/api/health",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}
