@@ -26,7 +26,8 @@ const DEFAULT_SELLER_PASSWORD = process.env.SELLER_PASSWORD || "Seller@123";
 const DEFAULT_SELLER_NAME = process.env.SELLER_NAME || "Near Buy Seller";
 const USE_FILE_DB = String(process.env.USE_FILE_DB || "").toLowerCase() === "true";
 
-app.locals.useFileDb = false;
+app.locals.useFileDb = true;
+app.locals.mongoConnected = false;
 
 if (!process.env.JWT_SECRET) {
   process.env.JWT_SECRET = crypto.randomBytes(32).toString("hex");
@@ -56,6 +57,7 @@ app.get("/api/health", (req, res) => {
   res.json({
     status: "ok",
     storage: app.locals.useFileDb ? "file" : "mongo",
+    mongoConnected: app.locals.mongoConnected,
   });
 });
 
@@ -224,32 +226,38 @@ async function ensureSeedUsers() {
   await ensureSellerUser();
 }
 
-function startHttpServer(storageMode) {
+function startHttpServer() {
   app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT} (${storageMode} mode)`);
+    console.log(
+      `Server running on port ${PORT} (${app.locals.useFileDb ? "file" : "mongo"} mode)`
+    );
   });
 }
 
-async function startInFileDbMode(reason) {
+async function enableFileDbMode(reason) {
   app.locals.useFileDb = true;
+  app.locals.mongoConnected = false;
 
   if (reason) {
     console.warn(reason);
   }
 
-  await ensureSeedUsers();
-  startHttpServer("file");
+  try {
+    await ensureSeedUsers();
+  } catch (error) {
+    console.error(`File storage seed failed: ${error.message}`);
+  }
 }
 
-async function startServer() {
+async function connectMongoInBackground() {
   if (USE_FILE_DB) {
-    await startInFileDbMode("USE_FILE_DB=true detected. Starting backend with file storage.");
+    await enableFileDbMode("USE_FILE_DB=true detected. Backend will stay in file storage mode.");
     return;
   }
 
   if (!process.env.MONGO_URI) {
-    await startInFileDbMode(
-      "MONGO_URI is not configured. Starting backend with file storage fallback."
+    await enableFileDbMode(
+      "MONGO_URI is not configured. Backend will stay in file storage fallback mode."
     );
     return;
   }
@@ -259,14 +267,25 @@ async function startServer() {
       serverSelectionTimeoutMS: 10000,
     });
     console.log("MongoDB Connected ✅");
+    app.locals.useFileDb = false;
+    app.locals.mongoConnected = true;
     await ensureSeedUsers();
-    startHttpServer("mongo");
+    console.log("Backend switched to MongoDB mode.");
   } catch (err) {
-    await startInFileDbMode(
-      `MongoDB connection failed (${err.message}). Starting backend with file storage fallback.`
+    await enableFileDbMode(
+      `MongoDB connection failed (${err.message}). Backend will continue in file storage fallback mode.`
     );
   }
 }
 
-startServer();
+async function startServer() {
+  await enableFileDbMode("Starting backend with safe file storage mode.");
+  startHttpServer();
+  await connectMongoInBackground();
+}
+
+startServer().catch((error) => {
+  console.error(`Fatal startup error: ${error.message}`);
+  process.exit(1);
+});
 
