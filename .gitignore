@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.vite/
+.vite-cache/
+
+Backend/node_modules/
+Backend/.env
+Backend/*.log
+
+.env
+.env.local
+.env.*.local
